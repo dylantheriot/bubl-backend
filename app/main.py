@@ -1,20 +1,20 @@
 from flask import Flask
 from flask import request
 import base64
-import requests
+# import requests
 import datetime
-from urllib.parse import urlencode
+# from urllib.parse import urlencode
 from flask import redirect
-from dotenv import load_dotenv
-from .spotifyApi import SpotifyAPI
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+# from dotenv import load_dotenv
+# from .spotifyApi import SpotifyAPI
+# import firebase_admin
+# from firebase_admin import credentials
+# from firebase_admin import firestore
 import os
 import json
 
 # load environment variables
-load_dotenv()
+# load_dotenv()
 
 # load firebase
 # cred = credentials.Certificate({
@@ -33,7 +33,7 @@ load_dotenv()
 # db = firestore.client()
 
 # load spotify object
-spotify = SpotifyAPI()
+# spotify = SpotifyAPI()
 
 # start flask
 app = Flask(__name__)
@@ -42,11 +42,11 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello, World!'
 
-@app.route('/spotify/connect')
-def spotify_connect():
-  uuid = request.args.get('uuid')
-  oauth_url = spotify.return_auth_url(uuid)
-  return redirect(oauth_url)
+# @app.route('/spotify/connect')
+# def spotify_connect():
+#   uuid = request.args.get('uuid')
+#   oauth_url = spotify.return_auth_url(uuid)
+#   return redirect(oauth_url)
 
 # @app.route('/callback')
 # def callback():
