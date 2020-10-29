@@ -1,9 +1,9 @@
 from flask import Flask
 from flask import request
 import base64
-# import requests
+import requests
 import datetime
-# from urllib.parse import urlencode
+from urllib.parse import urlencode
 from flask import redirect
 # from dotenv import load_dotenv
 # from .spotifyApi import SpotifyAPI
