@@ -5,7 +5,6 @@ import requests
 import datetime
 from urllib.parse import urlencode
 from flask import redirect
-# from dotenv import load_dotenv
 from .spotifyApi import SpotifyAPI
 import firebase_admin
 from firebase_admin import credentials
@@ -13,15 +12,22 @@ from firebase_admin import firestore
 import os
 import json
 
+# THREE THINGS TO CHANGE WHEN RUNNING LOCALLY:
+# 1) add dotenv stuff
+# 2) add json.loads() to private_key init
+# 3) change redirect_uri in spotifyApi to localhost
+
 # load environment variables
-# load_dotenv()
+from dotenv import load_dotenv
+load_dotenv()
 
 # load firebase
 cred = credentials.Certificate({
   "type": os.environ['FIREBASE_TYPE'],
   "project_id": os.environ['FIREBASE_PROJECT_ID'],
   "private_key_id": os.environ['FIREBASE_PRIVATE_KEY_ID'],
-  "private_key": json.loads(os.environ['FIREBASE_PRIVATE_KEY']),
+  # "private_key": json.loads(os.environ['FIREBASE_PRIVATE_KEY']),
+  "private_key": os.environ['FIREBASE_PRIVATE_KEY'],
   "client_email": os.environ['FIREBASE_CLIENT_EMAIL'],
   "client_id": os.environ['FIREBASE_CLIENT_ID'],
   "auth_uri": os.environ['FIREBASE_AUTH_URI'],
@@ -42,9 +48,17 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello, World!'
 
+# SPOTIFY ENDPOINTS
 @app.route('/spotify/connect')
 def spotify_connect():
   uuid = request.args.get('uuid')
+  
+  # check to see if Spotify is already connected
+  doc_ref = db.collection(u'users').document(uuid)
+  user_data = doc_ref.get().to_dict()
+  if user_data['is_spotify_connected']:
+    return redirect('/spotify/connect_complete')
+
   oauth_url = spotify.return_auth_url(uuid)
   return redirect(oauth_url)
 
@@ -61,7 +75,71 @@ def callback():
         u'is_spotify_connected': True,
         u'expires_in': expires_in
     })
+    return redirect('/spotify/connect_complete')
+
+@app.route('/spotify/connect_complete')
+def spotify_connection_complete():
     return "<h1> Spotify connected successfully! You may now close this tab</h1>"
+
+@app.route('/spotify/search')
+def spotify_search():
+    query = request.args.get('query')
+    search_type = request.args.get('search_type')
+    res = spotify.search(query, search_type)
+    return res
+
+@app.route('/spotify/user/playlists')
+def get_spotify_user_playlists():
+  uuid = request.args.get('uuid')
+  access_token = get_access_token(uuid)
+  url = "https://api.spotify.com/v1/me/playlists"
+  res = spotify.get_users_data_wrapper(url, access_token)
+  return res
+
+@app.route('/spotify/user/saved_albums')
+def get_spotify_user_saved_albums():
+  uuid = request.args.get('uuid')
+  access_token = get_access_token(uuid)
+  url = "https://api.spotify.com/v1/me/albums"
+  res = spotify.get_users_data_wrapper(url, access_token)
+  return res
+
+@app.route('/spotify/user/saved_shows')
+def get_spotify_user_saved_shows():
+  uuid = request.args.get('uuid')
+  access_token = get_access_token(uuid)
+  url = "https://api.spotify.com/v1/me/shows"
+  res = spotify.get_users_data_wrapper(url, access_token)
+  return res
+
+@app.route('/spotify/user/saved_tracks')
+def get_spotify_user_saved_tracks():
+  uuid = request.args.get('uuid')
+  access_token = get_access_token(uuid)
+  url = "https://api.spotify.com/v1/me/tracks"
+  res = spotify.get_users_data_wrapper(url, access_token)
+  return res
+
+@app.route('/spotify/user/following')
+def spotify_user_following():
+  uuid = request.args.get('uuid')
+  access_token = get_access_token(uuid)
+  url = "https://api.spotify.com/v1/me/following?type=artist"
+  res = spotify.get_users_data_wrapper(url, access_token)
+  return res
+
+def get_access_token(uuid):
+  check_access_token_expired(uuid)
+  doc_ref = db.collection(u'users').document(uuid)
+  user_data = doc_ref.get().to_dict()
+  return user_data['access_token']
+
+def check_access_token_expired(uuid):
+    now = datetime.datetime.now()
+    doc_ref = db.collection(u'users').document(uuid)
+    user_data = doc_ref.get().to_dict()
+    if user_data['expires_in'].replace(tzinfo=None) < now:
+      update_access_token(uuid)
 
 def update_access_token(uuid):
     doc_ref = db.collection(u'users').document(uuid)
