@@ -11,6 +11,8 @@ class SpotifyAPI(object):
     client_id = None
     client_secret = None
     token_url = 'https://accounts.spotify.com/api/token'
+    # redirect_uri = 'http://127.0.0.1:5000/callback'
+    redirect_uri = 'https://bubl-backend.herokuapp.com/callback'
     
     def __init__(self):
         self.client_id = os.environ['CLIENT_ID']
@@ -94,7 +96,7 @@ class SpotifyAPI(object):
       headers = urlencode({
           "client_id": self.client_id,
           "response_type": "code",
-          "redirect_uri": "http://127.0.0.1:5000/callback",
+          "redirect_uri": self.redirect_uri,
           "show_dialog": "true",
           "state": user_id,
           "scope": 'user-top-read'
@@ -106,7 +108,7 @@ class SpotifyAPI(object):
       data = {
         'grant_type': 'authorization_code',
         'code': auth_code,
-        'redirect_uri': 'http://127.0.0.1:5000/callback'
+        'redirect_uri': self.redirect_uri
       }
       headers = self.get_token_headers()
       r = requests.post(self.token_url, data=data, headers=headers)
