@@ -7,9 +7,9 @@ from urllib.parse import urlencode
 from flask import redirect
 # from dotenv import load_dotenv
 # from .spotifyApi import SpotifyAPI
-# import firebase_admin
-# from firebase_admin import credentials
-# from firebase_admin import firestore
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
 import os
 import json
 
