@@ -18,16 +18,16 @@ import json
 # 3) change redirect_uri in spotifyApi to localhost
 
 # load environment variables
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 # load firebase
 cred = credentials.Certificate({
   "type": os.environ['FIREBASE_TYPE'],
   "project_id": os.environ['FIREBASE_PROJECT_ID'],
   "private_key_id": os.environ['FIREBASE_PRIVATE_KEY_ID'],
-  # "private_key": json.loads(os.environ['FIREBASE_PRIVATE_KEY']),
-  "private_key": os.environ['FIREBASE_PRIVATE_KEY'],
+  "private_key": json.loads(os.environ['FIREBASE_PRIVATE_KEY']),
+  # "private_key": os.environ['FIREBASE_PRIVATE_KEY'],
   "client_email": os.environ['FIREBASE_CLIENT_EMAIL'],
   "client_id": os.environ['FIREBASE_CLIENT_ID'],
   "auth_uri": os.environ['FIREBASE_AUTH_URI'],

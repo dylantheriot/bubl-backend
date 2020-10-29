@@ -11,8 +11,8 @@ class SpotifyAPI(object):
   client_id = None
   client_secret = None
   token_url = 'https://accounts.spotify.com/api/token'
-  redirect_uri = 'http://127.0.0.1:5000/callback'
-  # redirect_uri = 'https://bubl-backend.herokuapp.com/callback'
+  # redirect_uri = 'http://127.0.0.1:5000/callback'
+  redirect_uri = 'https://bubl-backend.herokuapp.com/callback'
   
   def __init__(self):
     self.client_id = os.environ['CLIENT_ID']
