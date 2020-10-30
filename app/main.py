@@ -12,6 +12,12 @@ from firebase_admin import firestore
 import os
 import json
 
+# YouTube
+import argparse
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+
 # THREE THINGS TO CHANGE WHEN RUNNING LOCALLY:
 # 1) add dotenv stuff
 # 2) add json.loads() to private_key init
@@ -25,9 +31,9 @@ import json
 cred = credentials.Certificate({
   "type": os.environ['FIREBASE_TYPE'],
   "project_id": os.environ['FIREBASE_PROJECT_ID'],
-  "private_key_id": os.environ['FIREBASE_PRIVATE_KEY_ID'],
+  # "private_key_id": os.environ['FIREBASE_PRIVATE_KEY_ID'],
   "private_key": json.loads(os.environ['FIREBASE_PRIVATE_KEY']),
-  # "private_key": os.environ['FIREBASE_PRIVATE_KEY'],
+  "private_key": os.environ['FIREBASE_PRIVATE_KEY'],
   "client_email": os.environ['FIREBASE_CLIENT_EMAIL'],
   "client_id": os.environ['FIREBASE_CLIENT_ID'],
   "auth_uri": os.environ['FIREBASE_AUTH_URI'],
@@ -40,6 +46,9 @@ db = firestore.client()
 
 # load spotify object
 spotify = SpotifyAPI()
+
+# load youtube object
+youtube = build('youtube', 'v3', developerKey=os.environ['YOUTUBE_DEVELOPER_KEY'])
 
 # start flask
 app = Flask(__name__)
@@ -128,6 +137,7 @@ def spotify_user_following():
   res = spotify.get_users_data_wrapper(url, access_token)
   return res
 
+# spotify helper functions
 def get_access_token(uuid):
   check_access_token_expired(uuid)
   doc_ref = db.collection(u'users').document(uuid)
@@ -154,3 +164,20 @@ def update_access_token(uuid):
         u'refresh_token': refresh_token,
         u'expires_in': expires_in,
     })
+
+@app.route('/youtube/search')
+def youtube_search():
+  query = request.args.get('query')
+  search_response = youtube.search().list(
+  q=query,
+  part='id,snippet',
+  videoEmbeddable='true',
+  maxResults=5,
+  type='video'
+  ).execute()
+  
+  videos = []
+  for search_result in search_response.get('items', []):
+    videos.append('https://www.youtube.com/watch?v=%s' % (search_result['id']['videoId']))
+  json_res = json.dumps({'videos': videos})
+  return json_res
