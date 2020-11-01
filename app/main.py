@@ -11,6 +11,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 import os
 import json
+from flask_cors import CORS
 
 # YouTube
 import argparse
@@ -52,10 +53,29 @@ youtube = build('youtube', 'v3', developerKey=os.environ['YOUTUBE_DEVELOPER_KEY'
 
 # start flask
 app = Flask(__name__)
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!'
+  return 'Hello, World!'
+
+@app.route('/create-user', methods=['POST'])
+def create_user():
+  new_user_uuid = request.get_json()['uuid']
+  new_user = db.collection('users ').document(new_user_uuid)
+  if new_user.get().exists:
+    print('user already exists')
+    return 'Already exists', 200
+  else:
+    new_user.set({
+      u'refresh_token': '',
+      u'access_token': '',
+      u'is_spotify_connected': False,
+      u'expires_in': datetime.datetime.now()
+    })
+
+  return 'Success', 200
+
 
 # SPOTIFY ENDPOINTS
 @app.route('/spotify/connect')
