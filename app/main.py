@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import request
+from flask import Response
 import base64
 import requests
 import datetime
@@ -115,7 +116,23 @@ def spotify_search():
     query = request.args.get('query')
     search_type = request.args.get('search_type')
     res = spotify.search(query, search_type)
-    return res
+    # return res
+
+    json_res = []
+    if search_type == 'track':
+      for item in res['tracks']['items']:
+        song = {
+          'artist': item['artists'][0]['name'],
+          'track': item['name'],
+          'album': item['album']['name'],
+          'track_img': item['album']['images'][1]['url'],
+          'embed_url': item['external_urls']['spotify'] 
+        }
+        json_res.append(song)
+    else:
+      return res
+    json_res = json.dumps({'result': json_res})
+    return Response(json_res, mimetype="application/json")
 
 @app.route('/spotify/user/playlists')
 def get_spotify_user_playlists():
@@ -200,4 +217,4 @@ def youtube_search():
   for search_result in search_response.get('items', []):
     videos.append('https://www.youtube.com/watch?v=%s' % (search_result['id']['videoId']))
   json_res = json.dumps({'videos': videos})
-  return json_res
+  return Response(json_res, mimetype='application/json')
