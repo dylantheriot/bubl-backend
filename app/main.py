@@ -63,7 +63,7 @@ def hello_world():
 @app.route('/create-user', methods=['POST'])
 def create_user():
   new_user_uuid = request.get_json()['uuid']
-  new_user = db.collection('users ').document(new_user_uuid)
+  new_user = db.collection('users').document(new_user_uuid)
   if new_user.get().exists:
     print('user already exists')
     return 'Already exists', 200
