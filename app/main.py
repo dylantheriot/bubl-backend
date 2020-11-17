@@ -140,13 +140,14 @@ def get_spotify_user_playlists():
   access_token = get_access_token(uuid)
   url = "https://api.spotify.com/v1/me/playlists"
   res = spotify.get_users_data_wrapper(url, access_token)
+  # return res
 
   json_res = []
   for item in res['items']:
     playlist = {
       'name': item['name'],
       'desc': item['description'],
-      'playlist_img': item['images'][1]['url'],
+      'playlist_img': item['images'][0]['url'],
       'embed_url': item['external_urls']['spotify']
     }
     json_res.append(playlist)
