@@ -218,3 +218,25 @@ def youtube_search():
     videos.append('https://www.youtube.com/watch?v=%s' % (search_result['id']['videoId']))
   json_res = json.dumps({'videos': videos})
   return Response(json_res, mimetype='application/json')
+
+@app.route('/users/board/get')
+def get_users_items():
+  uuid = request.args.get('uuid')
+  board = db.collection('boards').document(uuid)
+  if not board.get().exists:
+    json_res = json.dumps({'items': []})
+    return Response(json_res, mimetype="application/json")
+  else:
+    json_res = board.get().to_dict()
+    return json_res
+
+@app.route('/users/board/update', methods=['POST'])
+def update_users_items():
+  post = request.get_json()
+  uuid = post['uuid']
+  board = db.collection('boards').document(uuid)
+  items = post['items']
+  board.set({
+    'items': items
+  })
+  return 'Successfully updated items', 200
