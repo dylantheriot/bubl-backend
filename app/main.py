@@ -125,12 +125,29 @@ def spotify_search():
           'artist': item['artists'][0]['name'],
           'track': item['name'],
           'album': item['album']['name'],
-          'track_img': item['album']['images'][1]['url'],
+          'track_img': item['album']['images'][0]['url'],
           'embed_url': item['external_urls']['spotify'] 
         }
         json_res.append(song)
-    else:
-      return res
+    elif search_type == 'playlist':
+      for item in res['playlists']['items']:
+        playlist = {
+          'name': item['name'],
+          'desc': item['description'],
+          'playlist_img': item['images'][0]['url'],
+          'embed_url': item['external_urls']['spotify']
+        }
+        json_res.append(playlist)
+    elif search_type == 'album':
+      for item in res['albums']['items']:
+        album = {
+          'name': item['name'],
+          'artist': item['artists'][0]['name'],
+          'album_img': item['images'][0]['url'],
+          'release_date': item['release_date'],
+          'embed_url': item['external_urls']['spotify']
+        }
+        json_res.append(album)
     json_res = json.dumps({'result': json_res})
     return Response(json_res, mimetype="application/json")
 
@@ -176,7 +193,21 @@ def get_spotify_user_saved_tracks():
   access_token = get_access_token(uuid)
   url = "https://api.spotify.com/v1/me/tracks"
   res = spotify.get_users_data_wrapper(url, access_token)
-  return res
+  # return res
+
+  json_res = []
+  for item in res['items']:
+    item = item['track']
+    song = {
+      'artist': item['artists'][0]['name'],
+      'track': item['name'],
+      'album': item['album']['name'],
+      'track_img': item['album']['images'][0]['url'],
+      'embed_url': item['external_urls']['spotify'] 
+    }
+    json_res.append(song)
+  json_res = json.dumps({'result': json_res})
+  return Response(json_res, mimetype="application/json")
 
 @app.route('/spotify/user/following')
 def spotify_user_following():
@@ -227,7 +258,7 @@ def youtube_search():
   
   videos = []
   for search_result in search_response.get('items', []):
-    videos.append('https://www.youtube.com/watch?v=%s' % (search_result['id']['videoId']))
+    videos.append({'link': 'https://www.youtube.com/watch?v=%s' % (search_result['id']['videoId']) })
   json_res = json.dumps({'videos': videos})
   return Response(json_res, mimetype='application/json')
 

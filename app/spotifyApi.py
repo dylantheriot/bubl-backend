@@ -84,7 +84,7 @@ class SpotifyAPI(object):
   def get_artist(self, _id):
     return self.get_resource(_id, resource_type='artists')
   
-  def search(self, query, search_type='artist'):
+  def search(self, query, search_type='track'):
     headers = self.get_resource_header()
     url = "https://api.spotify.com/v1/search"
     data = urlencode({
