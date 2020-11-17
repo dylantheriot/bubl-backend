@@ -209,7 +209,7 @@ def youtube_search():
   q=query,
   part='id,snippet',
   videoEmbeddable='true',
-  maxResults=5,
+  maxResults=20,
   type='video'
   ).execute()
   
