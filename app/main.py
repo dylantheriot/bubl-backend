@@ -121,31 +121,34 @@ def spotify_search():
     json_res = []
     if search_type == 'track':
       for item in res['tracks']['items']:
+        uri = item['uri'].split(':')[2]
         song = {
           'artist': item['artists'][0]['name'],
           'track': item['name'],
           'album': item['album']['name'],
           'track_img': item['album']['images'][0]['url'],
-          'embed_url': item['external_urls']['spotify'] 
+          'embed_url': 'https://open.spotify.com/embed/track/' + uri
         }
         json_res.append(song)
     elif search_type == 'playlist':
       for item in res['playlists']['items']:
+        uri = item['uri'].split(':')[2]
         playlist = {
           'name': item['name'],
           'desc': item['description'],
           'playlist_img': item['images'][0]['url'],
-          'embed_url': item['external_urls']['spotify']
+          'embed_url': 'https://open.spotify.com/embed/playlist/' + uri
         }
         json_res.append(playlist)
     elif search_type == 'album':
       for item in res['albums']['items']:
+        uri = item['uri'].split(':')[2]
         album = {
           'name': item['name'],
           'artist': item['artists'][0]['name'],
           'album_img': item['images'][0]['url'],
           'release_date': item['release_date'],
-          'embed_url': item['external_urls']['spotify']
+          'embed_url': 'https://open.spotify.com/embed/album/' + uri
         }
         json_res.append(album)
     json_res = json.dumps({'result': json_res})
@@ -161,11 +164,12 @@ def get_spotify_user_playlists():
 
   json_res = []
   for item in res['items']:
+    uri = item['uri'].split(':')[2]
     playlist = {
       'name': item['name'],
       'desc': item['description'],
       'playlist_img': item['images'][0]['url'],
-      'embed_url': item['external_urls']['spotify']
+      'embed_url': 'https://open.spotify.com/embed/playlist/' + uri
     }
     json_res.append(playlist)
   json_res = json.dumps({'result': json_res})
@@ -198,12 +202,13 @@ def get_spotify_user_saved_tracks():
   json_res = []
   for item in res['items']:
     item = item['track']
+    uri = item['uri'].split(':')[2]
     song = {
       'artist': item['artists'][0]['name'],
       'track': item['name'],
       'album': item['album']['name'],
       'track_img': item['album']['images'][0]['url'],
-      'embed_url': item['external_urls']['spotify'] 
+      'embed_url': 'https://open.spotify.com/embed/track/' + uri
     }
     json_res.append(song)
   json_res = json.dumps({'result': json_res})
@@ -225,11 +230,13 @@ def get_access_token(uuid):
   return user_data['access_token']
 
 def check_access_token_expired(uuid):
-    now = datetime.datetime.now()
+    now = datetime.datetime.now().replace(tzinfo=None)
     doc_ref = db.collection(u'users').document(uuid)
     user_data = doc_ref.get().to_dict()
-    if user_data['expires_in'].replace(tzinfo=None) < now:
-      update_access_token(uuid)
+    # TODO: only update access token when necessary
+    # if user_data['expires_in'].replace(tzinfo=None) < now:
+    #   print('expired')
+    update_access_token(uuid)
 
 def update_access_token(uuid):
     doc_ref = db.collection(u'users').document(uuid)
