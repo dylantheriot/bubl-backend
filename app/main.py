@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import request
 from flask import Response
+import urllib
 import base64
 import requests
 import datetime
@@ -51,6 +52,8 @@ spotify = SpotifyAPI()
 
 # load youtube object
 youtube = build('youtube', 'v3', developerKey=os.environ['YOUTUBE_DEVELOPER_KEY'])
+
+giphy_key = os.environ['GIPHY_API_KEY']
 
 # start flask
 app = Flask(__name__)
@@ -290,3 +293,45 @@ def update_users_items():
     'items': items
   })
   return 'Successfully updated items', 200
+
+@app.route('/giphy/search')
+def giphy_search():
+    q = request.args.get('query')
+
+    if not q: 
+      q = 'taylor swift'
+
+    url = "http://api.giphy.com/v1/gifs/search?q="
+    q = q.replace(" ", "+")
+    url = url + q + "&api_key=" +giphy_key
+    limit = "&limit=20" 
+    url = url + limit
+    data=json.loads(urllib.request.urlopen(url).read())
+    json_res = []
+    for obj in data['data']: 
+      dicts = {
+        'url' : obj['images']['downsized']['url'], 
+        'title': obj['title']
+      }
+      json_res.append(dicts)
+    json_res = json.dumps({'result': json_res})
+    return Response(json_res, mimetype="application/json")
+
+
+@app.route('/giphy/trending')
+def giphy_trending(): 
+  url = "http://api.giphy.com/v1/gifs/trending?&api_key="
+  url = url+giphy_key
+  offset = "&offset=25"
+  url = url+offset
+  data=json.loads(urllib.request.urlopen(url).read())
+
+  json_res = []
+  for obj in data['data']: 
+    dicts = {
+      'url' : obj['images']['downsized']['url'],
+      'title': obj['title']
+    }
+    json_res.append(dicts)
+  json_res = json.dumps({'result': json_res})
+  return Response(json_res, mimetype="application/json")
