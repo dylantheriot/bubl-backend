@@ -75,11 +75,11 @@ def create_user():
       u'refresh_token': '',
       u'access_token': '',
       u'is_spotify_connected': False,
-      u'expires_in': datetime.datetime.now()
+      u'expires_in': datetime.datetime.now(),
+      u'bio': '',
     })
 
   return 'Success', 200
-
 
 # SPOTIFY ENDPOINTS
 @app.route('/spotify/connect')
@@ -102,11 +102,11 @@ def callback():
     res = spotify.request_refresh_token_from_auth_code(code)
     expires_in = datetime.datetime.now() + datetime.timedelta(seconds=res['expires_in'])
     doc_ref = db.collection(u'users').document(uuid)
-    doc_ref.set({
+    doc_ref.update({
         u'refresh_token': res['refresh_token'],
         u'access_token': res['access_token'],
         u'is_spotify_connected': True,
-        u'expires_in': expires_in
+        u'expires_in': expires_in,
     })
     return redirect('/spotify/connect_complete')
 
@@ -293,6 +293,24 @@ def update_users_items():
     'items': items
   })
   return 'Successfully updated items', 200
+
+@app.route('/users/bio/update', methods=['POST'])
+def update_users_bio():
+  post = request.get_json()
+  uuid = post['uuid']
+  updated_bio = post['updated_bio']
+  user = db.collection('users').document(uuid)
+  user.update({
+    'bio': updated_bio
+  })
+  return 'Successfully updated bio', 200
+
+@app.route('/users/bio/get')
+def get_users_bio():
+  uuid = request.args.get('uuid')
+  user = db.collection('users').document(uuid).get().to_dict()
+  json_res = json.dumps({'bio': user['bio']})
+  return Response(json_res, mimetype="application/json")
 
 @app.route('/giphy/search')
 def giphy_search():
