@@ -268,7 +268,7 @@ def youtube_search():
   
   videos = []
   for search_result in search_response.get('items', []):
-    videos.append({'link': 'https://www.youtube.com/watch?v=%s' % (search_result['id']['videoId']) })
+    videos.append({'link': 'https://www.youtube.com/watch?v=%s' % (search_result['id']['videoId']), 'title': search_result['snippet']['title']})
   json_res = json.dumps({'videos': videos})
   return Response(json_res, mimetype='application/json')
 
