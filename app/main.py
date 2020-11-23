@@ -83,6 +83,7 @@ def create_user():
       u'is_spotify_connected': False,
       u'expires_in': datetime.datetime.now(),
       u'bio': '',
+      u'bubl_name': bubl_name,
     })
     bubl_name_collection.set({
       u'google_id': new_user_uuid,
