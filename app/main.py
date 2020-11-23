@@ -197,10 +197,15 @@ def spotify_search():
     elif search_type == 'playlist':
       for item in res['playlists']['items']:
         uri = item['uri'].split(':')[2]
+        playlist_img = ''
+        try:
+          playlist_img = item['images'][0]['url']
+        except:
+          playlist_img = ''
         playlist = {
           'name': item['name'],
           'desc': item['description'],
-          'playlist_img': item['images'][0]['url'],
+          'playlist_img': playlist_img,
           'embed_url': 'https://open.spotify.com/embed/playlist/' + uri
         }
         json_res.append(playlist)
@@ -229,10 +234,15 @@ def get_spotify_user_playlists():
   json_res = []
   for item in res['items']:
     uri = item['uri'].split(':')[2]
+    playlist_img = ''
+    try:
+      playlist_img = item['images'][0]['url']
+    except:
+      playlist_img = ''
     playlist = {
       'name': item['name'],
       'desc': item['description'],
-      'playlist_img': item['images'][0]['url'],
+      'playlist_img': playlist_img,
       'embed_url': 'https://open.spotify.com/embed/playlist/' + uri
     }
     json_res.append(playlist)
