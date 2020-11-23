@@ -14,6 +14,8 @@ from firebase_admin import firestore
 import os
 import json
 from flask_cors import CORS
+import random
+import string
 
 # YouTube
 import argparse
@@ -66,11 +68,15 @@ def hello_world():
 @app.route('/create-user', methods=['POST'])
 def create_user():
   new_user_uuid = request.get_json()['uuid']
+  name = request.get_json()['name'].lower()
+  profile_image = request.get_json()['profile_image']
   new_user = db.collection('users').document(new_user_uuid)
   if new_user.get().exists:
     print('user already exists')
     return 'Already exists', 200
   else:
+    bubl_name = '-'.join(name.split()) + '-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+    bubl_name_collection = db.collection('bubl-name').document(bubl_name)
     new_user.set({
       u'refresh_token': '',
       u'access_token': '',
@@ -78,9 +84,47 @@ def create_user():
       u'expires_in': datetime.datetime.now(),
       u'bio': '',
     })
+    bubl_name_collection.set({
+      u'google_id': new_user_uuid,
+      u'profile_image': profile_image,
+      u'name': name,
+    })
+    search_text = db.collection('search').document('names')
+    list_names = search_text.get().to_dict()['list_names']
+    list_names.append(bubl_name)
+    search_text.set({
+      u'list_names': list_names
+    })
 
   return 'Success', 200
 
+@app.route('/users/search')
+def search_for_users():
+  bubl_search = request.args.get('query')
+  search_text = db.collection('search').document('names')
+  list_names = search_text.get().to_dict()['list_names']
+  potential_users = set()
+  bubl_search = bubl_search.split()
+  for searchedName in bubl_search:
+    for name in list_names:
+      if searchedName in name and name not in potential_users:
+        potential_users.add(name)
+  
+  json_res = []
+  for name in potential_users:
+    curr_person = db.collection('bubl-name').document(name).get().to_dict()
+    bio = db.collection('users').document(curr_person['google_id']).get().to_dict()['bio']
+    person = {
+      'google_id': curr_person['google_id'],
+      'profile_image': curr_person['profile_image'],
+      'name': curr_person['name'],
+      'bio': bio
+    }
+    json_res.append(person)
+
+  json_res = json.dumps({'result': json_res})
+  return Response(json_res, mimetype="application/json") 
+  
 # SPOTIFY ENDPOINTS
 @app.route('/spotify/connect')
 def spotify_connect():
