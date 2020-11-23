@@ -118,12 +118,28 @@ def search_for_users():
       'google_id': curr_person['google_id'],
       'profile_image': curr_person['profile_image'],
       'name': curr_person['name'],
-      'bio': bio
+      'bio': bio,
+      'bubl_name': name,
     }
     json_res.append(person)
 
   json_res = json.dumps({'result': json_res})
-  return Response(json_res, mimetype="application/json") 
+  return Response(json_res, mimetype="application/json")
+
+@app.route('/users/get')
+def get_specific_user():
+  bubl_name = request.args.get('bubl')
+  user = db.collection('bubl-name').document(bubl_name)
+  user_data = user.get().to_dict()
+  curr_user = {
+    'displayName': user_data['name'],
+    'photoURL': user_data['profile_image'],
+    'uid': user_data['google_id'],
+  }
+  json_res = json.dumps({'user': curr_user})
+  return Response(json_res, mimetype="application/json")
+
+
   
 # SPOTIFY ENDPOINTS
 @app.route('/spotify/connect')
